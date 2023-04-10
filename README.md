@@ -28,13 +28,21 @@ These instructions will help you set up the project and run the application on y
 
 ```bash
 git clone https://github.com/username/interapp-audio-merger.git
-
+```
 2. Change the working directory:
   
-  ```bash
+```bash
 cd interapp-audio-merger
-
+```
 4. run the application:
   ```bash
 python main.py
+```
+### Usage
+
+1. Drag and drop the desired audio files into the application, or click the Load files from txt button to load a text file containing file paths of audio files.
+2. Rearrange the audio files in the list as needed.
+3. Click the ... button to choose the export location for the merged audio file.
+4. Click the Build button to merge the audio files.
+5. After the merging process is complete, a popup message will appear, indicating that the build operation has been completed successfully.
 
