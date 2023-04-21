@@ -210,7 +210,7 @@ class App(TkinterDnD.Tk):
 
     def load_backup(self):
         if os.path.exists("backup.txt"):
-            with open("backup.txt", "r") as file:
+            with open("backup.txt", "r", encoding='utf-8') as file:
                 for line in file:
                     self.add_file(line.strip())
 
