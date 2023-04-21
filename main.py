@@ -113,7 +113,7 @@ class App(TkinterDnD.Tk):
         self.button.pack()
 
         self.setup_drag_and_drop()
-
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         #start by creating a message box with a button that asks if the user wants to load the backup
         self.prompt_load_backup()
@@ -205,6 +205,9 @@ class App(TkinterDnD.Tk):
                 file.write(item + "\n")
 
     def clear_listbox(self):
+        #promps the user if he wants to clear the listbox
+        if not messagebox.askyesno("Clear listbox", "Are you sure you want to clear the listbox?"):
+            return
         self.listbox.delete(0, tk.END)
         self.update_backup()
 
@@ -244,6 +247,11 @@ class App(TkinterDnD.Tk):
             for audio_file in audio_files:
                 self.add_file(audio_file)
 
+    #a function that runs when the user clicks the X button
+    def on_closing(self):
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.update_backup()
+            self.destroy()
 
 if __name__ == '__main__':
     app = App()
