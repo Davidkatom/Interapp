@@ -29,6 +29,7 @@ class DragDropListbox(tk.Listbox):
         selected = self.curselection()
         if selected:
             self.delete(selected)
+            self.update_backup()
 
     def start_drag(self, event):
         self.drag_start_index = self.nearest(event.y)
@@ -49,6 +50,12 @@ class DragDropListbox(tk.Listbox):
 
         self.delete(0, tk.END)
         self.insert(0, *items)
+        self.update_backup()
+
+    def update_backup(self):
+        with open("backup.txt", "w") as file:
+            for item in self.get(0, tk.END):
+                file.write(item + "\n")
 
 
 class App(TkinterDnD.Tk):
@@ -64,8 +71,6 @@ class App(TkinterDnD.Tk):
 
         self.style = ttk.Style()
         self.style.configure('Disabled.TEntry', foreground='grey')
-
-
 
         # Add export location label, entry, and button
         self.export_location_frame = ttk.Frame(self.main_frame)
@@ -87,7 +92,7 @@ class App(TkinterDnD.Tk):
 
         # Listbox and Scrollbar
         self.listbox_frame = ttk.Frame(self.main_frame)
-        self.listbox_frame.pack(expand=True, fill=tk.BOTH, pady=(0, 10))
+        self.listbox_frame.pack(expand=True, fill=tk.BOTH, pady=(0, 0))
 
         self.listbox = DragDropListbox(self.listbox_frame, selectmode=tk.EXTENDED, bg='white', font=('Arial', 12),
                                        relief='flat')
@@ -97,6 +102,10 @@ class App(TkinterDnD.Tk):
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox.config(yscrollcommand=self.scrollbar.set)
 
+        # button to clear the listbox
+        self.clear_button = ttk.Button(self.main_frame, text='Clear', command=self.clear_listbox)
+        self.clear_button.pack(side=tk.TOP, pady=(0, 0))
+
         self.progressbar = ttk.Progressbar(self.main_frame, mode='determinate')
         self.progressbar.pack(fill=tk.X, pady=(10, 0))
 
@@ -105,14 +114,34 @@ class App(TkinterDnD.Tk):
 
         self.setup_drag_and_drop()
 
+
+        #start by creating a message box with a button that asks if the user wants to load the backup
+        self.prompt_load_backup()
+    def prompt_load_backup(self):
+        #check if backup.txt exists and not empty
+        if os.path.isfile("backup.txt") and os.path.getsize("backup.txt") == 0:
+            return
+        if messagebox.askyesno("Load backup", "Do you want to load the backup?"):
+            self.load_backup()
     def export_files(self):
         export_file = filedialog.asksaveasfilename(defaultextension=".mp3",
                                                    filetypes=[("Text files", "*.mp3"), ("All files", "*.*")])
         self.export_location_var.set(export_file)
         # Add your export logic here
 
+    # a function the checks if all the files in the listbox exist
+    def check_files(self):
+        for file in self.listbox.get(0, tk.END):
+            if not os.path.isfile(file):
+                # if file not exist pop a message box
+                messagebox.showerror("Error", "File " + file + " does not exist")
+                return False
+        return True
+
     def build(self):
         export_file = self.export_location_var.get()
+        if not self.check_files():
+            return
         if export_file == '':
             return
         # Reset the progress bar
@@ -123,9 +152,6 @@ class App(TkinterDnD.Tk):
         build_thread.start()
 
         # Lock the GUI
-
-
-
 
     def build_thread(self, export_file):
         self.lock_gui()
@@ -176,6 +202,9 @@ class App(TkinterDnD.Tk):
             for item in self.listbox.get(0, tk.END):
                 file.write(item + "\n")
 
+    def clear_listbox(self):
+        self.listbox.delete(0, tk.END)
+        self.update_backup()
 
     def load_backup(self):
         if os.path.exists("backup.txt"):
@@ -212,6 +241,7 @@ class App(TkinterDnD.Tk):
             audio_files = merger.read_audio_files_from_txt(txt_file_path)
             for audio_file in audio_files:
                 self.add_file(audio_file)
+
 
 if __name__ == '__main__':
     app = App()
