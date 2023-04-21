@@ -53,7 +53,7 @@ class DragDropListbox(tk.Listbox):
         self.update_backup()
 
     def update_backup(self):
-        with open("backup.txt", "w") as file:
+        with open("backup.txt", "w",  encoding='utf-8') as file:
             for item in self.get(0, tk.END):
                 file.write(item + "\n")
 
@@ -200,7 +200,7 @@ class App(TkinterDnD.Tk):
         return event.action
 
     def update_backup(self, path="backup.txt"):
-        with open(path, "w") as file:
+        with open(path, "w",  encoding='utf-8') as file:
             for item in self.listbox.get(0, tk.END):
                 file.write(item + "\n")
 
