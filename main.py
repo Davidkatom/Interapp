@@ -71,7 +71,7 @@ class App(TkinterDnD.Tk):
         self.export_location_frame = ttk.Frame(self.main_frame)
         self.export_location_frame.pack(fill=tk.X, pady=(10, 0))
 
-        self.load_txt_button = ttk.Button(self.main_frame, text='Load files from txt', command=self.load_files_from_txt)
+        self.load_txt_button = ttk.Button(self.main_frame, text='Load files from backup', command=self.load_backup)
         self.load_txt_button.pack(pady=(10, 0))
 
         self.export_location_label = ttk.Label(self.export_location_frame, text='Export location:')
@@ -125,6 +125,8 @@ class App(TkinterDnD.Tk):
         # Lock the GUI
 
 
+
+
     def build_thread(self, export_file):
         self.lock_gui()
         # Pass the progress_callback function to the combine_audio_files function
@@ -169,6 +171,18 @@ class App(TkinterDnD.Tk):
             self.add_file(file_path)
         return event.action
 
+    def update_backup(self):
+        with open("backup.txt", "w") as file:
+            for item in self.listbox.get(0, tk.END):
+                file.write(item + "\n")
+
+
+    def load_backup(self):
+        if os.path.exists("backup.txt"):
+            with open("backup.txt", "r") as file:
+                for line in file:
+                    self.add_file(line.strip())
+
     def add_file(self, file_path):
         # Check if file_path is already in the listbox
         if file_path in self.listbox.get(0, tk.END):
@@ -184,6 +198,7 @@ class App(TkinterDnD.Tk):
             return
 
         self.listbox.insert(tk.END, file_path)
+        self.update_backup()
 
     def setup_drag_and_drop(self):
         self.listbox.drop_target_register(DND_FILES)
