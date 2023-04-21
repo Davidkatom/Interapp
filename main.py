@@ -144,6 +144,8 @@ class App(TkinterDnD.Tk):
             return
         if export_file == '':
             return
+
+        self.update_backup(export_file+".txt")
         # Reset the progress bar
         self.progressbar.config(value=0, maximum=len(self.listbox.get(0, tk.END)) - 2)
 
@@ -197,8 +199,8 @@ class App(TkinterDnD.Tk):
             self.add_file(file_path)
         return event.action
 
-    def update_backup(self):
-        with open("backup.txt", "w") as file:
+    def update_backup(self, path="backup.txt"):
+        with open(path, "w") as file:
             for item in self.listbox.get(0, tk.END):
                 file.write(item + "\n")
 
