@@ -17,6 +17,7 @@ class DragDropListbox(tk.Listbox):
         self.bind('<B1-Motion>', self.drag)
         self.bind('<ButtonRelease-1>', self.drop)
         self.bind('<Button-3>', self.show_context_menu)  # Bind right-click event
+        # bind change event
 
     def show_context_menu(self, event):
         self.select_clear(0, tk.END)
@@ -53,7 +54,7 @@ class DragDropListbox(tk.Listbox):
         self.update_backup()
 
     def update_backup(self):
-        with open("backup.txt", "w",  encoding='utf-8') as file:
+        with open("backup.txt", "w", encoding='utf-8') as file:
             for item in self.get(0, tk.END):
                 file.write(item + "\n")
 
@@ -115,14 +116,16 @@ class App(TkinterDnD.Tk):
         self.setup_drag_and_drop()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        #start by creating a message box with a button that asks if the user wants to load the backup
+        # start by creating a message box with a button that asks if the user wants to load the backup
         self.prompt_load_backup()
+
     def prompt_load_backup(self):
-        #check if backup.txt exists and not empty
+        # check if backup.txt exists and not empty
         if os.path.isfile("backup.txt") and os.path.getsize("backup.txt") == 0:
             return
         if messagebox.askyesno("Load backup", "Do you want to load the backup?"):
             self.load_backup()
+
     def export_files(self):
         export_file = filedialog.asksaveasfilename(defaultextension=".mp3",
                                                    filetypes=[("Text files", "*.mp3"), ("All files", "*.*")])
@@ -139,13 +142,20 @@ class App(TkinterDnD.Tk):
         return True
 
     def build(self):
+        if len(self.listbox.get(0, tk.END)) < 3:
+            messagebox.showerror("Error", "You need at least 3 files")
+            return
         export_file = self.export_location_var.get()
         if not self.check_files():
             return
         if export_file == '':
+            messagebox.showerror("Error", "Choose an export location")
             return
+        if os.path.isfile(export_file):
+            if not messagebox.askyesno("File exists", "The file already exists. Do you want to overwrite it?"):
+                return
 
-        self.update_backup(export_file+".txt")
+        self.update_backup(export_file + ".txt")
         # Reset the progress bar
         self.progressbar.config(value=0, maximum=len(self.listbox.get(0, tk.END)) - 2)
 
@@ -200,12 +210,12 @@ class App(TkinterDnD.Tk):
         return event.action
 
     def update_backup(self, path="backup.txt"):
-        with open(path, "w",  encoding='utf-8') as file:
+        with open(path, "w", encoding='utf-8') as file:
             for item in self.listbox.get(0, tk.END):
                 file.write(item + "\n")
 
     def clear_listbox(self):
-        #promps the user if he wants to clear the listbox
+        # promps the user if he wants to clear the listbox
         if not messagebox.askyesno("Clear listbox", "Are you sure you want to clear the listbox?"):
             return
         self.listbox.delete(0, tk.END)
@@ -247,11 +257,12 @@ class App(TkinterDnD.Tk):
             for audio_file in audio_files:
                 self.add_file(audio_file)
 
-    #a function that runs when the user clicks the X button
+    # a function that runs when the user clicks the X button
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.update_backup()
             self.destroy()
+
 
 if __name__ == '__main__':
     app = App()
