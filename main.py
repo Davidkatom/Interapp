@@ -262,6 +262,7 @@ class App(TkinterDnD.Tk):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.update_backup()
             self.destroy()
+            exit()
 
 
 if __name__ == '__main__':
