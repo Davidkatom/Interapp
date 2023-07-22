@@ -39,7 +39,8 @@ cd interapp-audio-merger
   ```bash
 python main.py
 ```
-### Usage
+### To Create an executable
+0. run pyinstaller -F main.py --additional-hooks-dir=. --collect-all tkinterdnd2 -i icon.ico
 
 1. Drag and drop the desired audio files into the application, or click the Load files from txt button to load a text file containing file paths of audio files.
 2. Rearrange the audio files in the list as needed.
