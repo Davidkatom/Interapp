@@ -16,7 +16,8 @@ Interapp Audio Merger is a simple application that allows you to merge multiple 
 These instructions will help you set up the project and run the application on your local machine.
 
 ### Prerequisites
-
+- git -> https://git-scm.com/download/win
+- python -> https://www.python.org/downloads/
 - Python 3.x
 - tkinter
 - tkinterdnd2
