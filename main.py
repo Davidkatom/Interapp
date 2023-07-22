@@ -1,3 +1,4 @@
+#TODO add distribution
 import os
 import tkinter as tk
 import winsound
@@ -103,6 +104,19 @@ class App(TkinterDnD.Tk):
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox.config(yscrollcommand=self.scrollbar.set)
 
+        # Add 'Up' and 'Down' buttons
+        self.button_frame = ttk.Frame(self.listbox_frame)
+        self.button_frame.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.up_button = ttk.Button(self.button_frame, text='↑', command=self.move_up)
+        self.up_button.pack(side=tk.TOP)
+
+        self.down_button = ttk.Button(self.button_frame, text='↓', command=self.move_down)
+        self.down_button.pack(side=tk.TOP)
+
+        self.down_button = ttk.Button(self.button_frame, text='Remove', command=self.remove_item)
+        self.down_button.pack(side=tk.TOP)
+
         # button to clear the listbox
         self.clear_button = ttk.Button(self.main_frame, text='Clear', command=self.clear_listbox)
         self.clear_button.pack(side=tk.TOP, pady=(0, 0))
@@ -155,7 +169,9 @@ class App(TkinterDnD.Tk):
             if not messagebox.askyesno("File exists", "The file already exists. Do you want to overwrite it?"):
                 return
 
-        self.update_backup(export_file + ".txt")
+        self.update_backup(export_file + "full.txt")
+        self.update_backup(export_file + ".txt", full=False)
+
         # Reset the progress bar
         self.progressbar.config(value=0, maximum=len(self.listbox.get(0, tk.END)) - 2)
 
@@ -177,7 +193,10 @@ class App(TkinterDnD.Tk):
 
     def build_complete(self):
         winsound.MessageBeep()  # You can also use winsound.PlaySound() to play a custom sound
-        messagebox.showinfo("Build Complete", "The build operation has been completed successfully.")
+        if messagebox.askyesno("Build Complete",
+                               "The build operation has been completed successfully. Do you want to open the containing folder?"):
+            output_dir = os.path.dirname(self.export_location_var.get())
+            os.startfile(output_dir)
 
     def progress_callback(self, current):
         self.after(0, self.update_progressbar, current)
@@ -209,16 +228,27 @@ class App(TkinterDnD.Tk):
             self.add_file(file_path)
         return event.action
 
-    def update_backup(self, path="backup.txt"):
+    def update_backup(self, path="backup.txt", full=True):
         with open(path, "w", encoding='utf-8') as file:
             for item in self.listbox.get(0, tk.END):
-                file.write(item + "\n")
+                if full:
+                    file.write(item + "\n")
+                else:
+                    file.write(os.path.basename(item) + "\n")
+
 
     def clear_listbox(self):
         # promps the user if he wants to clear the listbox
         if not messagebox.askyesno("Clear listbox", "Are you sure you want to clear the listbox?"):
             return
         self.listbox.delete(0, tk.END)
+        self.update_backup()
+
+    def remove_item(self):
+        selection = self.listbox.curselection()
+        if len(selection) == 0:
+            return
+        self.listbox.delete(selection[0])
         self.update_backup()
 
     def load_backup(self):
@@ -264,7 +294,30 @@ class App(TkinterDnD.Tk):
             self.destroy()
             exit()
 
+# Method to move a file up in the list
+    def move_up(self):
+        selected = self.listbox.curselection()
+        if selected:
+            for index in selected:
+                if index != 0:  # Cannot move up from the top
+                    self.listbox.insert(index - 1, self.listbox.get(index))
+                    self.listbox.delete(index + 1)
+                    self.listbox.select_clear(index)
+                    self.listbox.select_set(index - 1)
+            self.listbox.update_backup()
 
+    # Method to move a file down in the list
+    def move_down(self):
+        selected = self.listbox.curselection()
+        if selected:
+            selected = selected[::-1]  # Start from the bottom to avoid changing indices
+            for index in selected:
+                if index != self.listbox.size() - 1:  # Cannot move down from the bottom
+                    self.listbox.insert(index + 2, self.listbox.get(index))
+                    self.listbox.delete(index)
+                    self.listbox.select_clear(index + 2)
+                    self.listbox.select_set(index + 1)
+            self.listbox.update_backup()
 if __name__ == '__main__':
     app = App()
     app.mainloop()
