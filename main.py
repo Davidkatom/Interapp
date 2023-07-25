@@ -319,5 +319,11 @@ class App(TkinterDnD.Tk):
                     self.listbox.select_set(index + 1)
             self.listbox.update_backup()
 if __name__ == '__main__':
+    if getattr(sys, 'frozen', False):
+        print("Running in a PyInstaller bundle")
+        # Change the script directory to the PyInstaller bundle directory
+        script_dir = sys._MEIPASS
+        os.environ["PATH"] += os.pathsep + os.path.join(script_dir, 'ffmpeg')
+
     app = App()
     app.mainloop()
