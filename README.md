@@ -40,8 +40,10 @@ cd interapp-audio-merger
 python main.py
 ```
 ### To Create an executable
-0. run pyinstaller -F main.py --additional-hooks-dir=. --collect-all tkinterdnd2 -i icon.ico
-
+```bash
+pyinstaller -F --add-data ./ffmpeg/bin;ffmpeg main.py --additional-hooks-dir=. --collect-all tkinterdnd2 -i icon.ico
+```
+### Usage
 1. Drag and drop the desired audio files into the application, or click the Load files from txt button to load a text file containing file paths of audio files.
 2. Rearrange the audio files in the list as needed.
 3. Click the ... button to choose the export location for the merged audio file.
