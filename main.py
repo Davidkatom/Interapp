@@ -9,14 +9,15 @@ import threading
 import merger
 import os
 import sys
+import win32api
 
 
 class DragDropListbox(tk.Listbox):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
-        self.bind('<Button-1>', self.start_drag)
-        self.bind('<B1-Motion>', self.drag)
-        self.bind('<ButtonRelease-1>', self.drop)
+        #self.bind('<Button-1>', self.start_drag)
+        #self.bind('<B1-Motion>', self.drag)
+        #self.bind('<ButtonRelease-1>', self.drop)
         self.bind('<Button-3>', self.show_context_menu)  # Bind right-click event
         # bind change event
 
@@ -33,26 +34,26 @@ class DragDropListbox(tk.Listbox):
             self.delete(selected)
             self.update_backup()
 
-    def start_drag(self, event):
-        self.drag_start_index = self.nearest(event.y)
-
-    def drag(self, event):
-        current_index = self.nearest(event.y)
-
-        if current_index != self.drag_start_index:
-            self.swap(self.drag_start_index, current_index)
-            self.drag_start_index = current_index
-
-    def drop(self, event):
-        self.drag_start_index = None
-
-    def swap(self, a, b):
-        items = list(self.get(0, tk.END))
-        items[a], items[b] = items[b], items[a]
-
-        self.delete(0, tk.END)
-        self.insert(0, *items)
-        self.update_backup()
+    # def start_drag(self, event):
+    #     self.drag_start_index = self.nearest(event.y)
+    #
+    # def drag(self, event):
+    #     current_index = self.nearest(event.y)
+    #
+    #     if current_index != self.drag_start_index:
+    #         self.swap(self.drag_start_index, current_index)
+    #         self.drag_start_index = current_index
+    #
+    # def drop(self, event):
+    #     self.drag_start_index = None
+    #
+    # def swap(self, a, b):
+    #     items = list(self.get(0, tk.END))
+    #     items[a], items[b] = items[b], items[a]
+    #
+    #     self.delete(0, tk.END)
+    #     self.insert(0, *items)
+    #     self.update_backup()
 
     def update_backup(self):
         with open("backup.txt", "w", encoding='utf-8') as file:
@@ -258,6 +259,8 @@ class App(TkinterDnD.Tk):
                     self.add_file(line.strip())
 
     def add_file(self, file_path):
+        file_path = win32api.GetLongPathName(file_path)
+
         # Check if file_path is already in the listbox
         if file_path in self.listbox.get(0, tk.END):
             return
