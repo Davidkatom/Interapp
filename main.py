@@ -94,16 +94,28 @@ class App(TkinterDnD.Tk):
         self.export_button.pack(side=tk.LEFT, padx=(5, 0))
 
         # Listbox and Scrollbar
+        # Listbox and Scrollbars
         self.listbox_frame = ttk.Frame(self.main_frame)
         self.listbox_frame.pack(expand=True, fill=tk.BOTH, pady=(0, 0))
 
-        self.listbox = DragDropListbox(self.listbox_frame, selectmode=tk.EXTENDED, bg='white', font=('Arial', 12),
-                                       relief='flat')
+        # Horizontal scrollbar
+        self.h_scrollbar = ttk.Scrollbar(self.listbox_frame, orient='horizontal')
+        self.h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Vertical scrollbar
+        self.v_scrollbar = ttk.Scrollbar(self.listbox_frame, orient='vertical')
+        self.v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Listbox
+        self.listbox = tk.Listbox(self.listbox_frame, selectmode=tk.EXTENDED, bg='white', font=('Arial', 12),
+                                  relief='flat', yscrollcommand=self.v_scrollbar.set,
+                                  xscrollcommand=self.h_scrollbar.set)
         self.listbox.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        self.scrollbar = ttk.Scrollbar(self.listbox_frame, orient='vertical', command=self.listbox.yview)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.listbox.config(yscrollcommand=self.scrollbar.set)
+        # Configure scrollbars to scroll the listbox
+        self.v_scrollbar.config(command=self.listbox.yview)
+        self.h_scrollbar.config(command=self.listbox.xview)
+
 
         # Add 'Up' and 'Down' buttons
         self.button_frame = ttk.Frame(self.listbox_frame)
@@ -271,7 +283,6 @@ class App(TkinterDnD.Tk):
         else:
             # Return the original path if it has 3 or fewer parts
             short_path = file_path
-        print(path_parts)
         # Check if file_path is already in the listbox
         if short_path in self.listbox.get(0, tk.END):
             return
