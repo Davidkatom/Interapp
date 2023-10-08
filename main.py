@@ -1,4 +1,4 @@
-#TODO add distribution
+# TODO add distribution
 import os
 import tkinter as tk
 import winsound
@@ -15,9 +15,9 @@ import win32api
 class DragDropListbox(tk.Listbox):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
-        #self.bind('<Button-1>', self.start_drag)
-        #self.bind('<B1-Motion>', self.drag)
-        #self.bind('<ButtonRelease-1>', self.drop)
+        # self.bind('<Button-1>', self.start_drag)
+        # self.bind('<B1-Motion>', self.drag)
+        # self.bind('<ButtonRelease-1>', self.drop)
         self.bind('<Button-3>', self.show_context_menu)  # Bind right-click event
         # bind change event
 
@@ -64,7 +64,7 @@ class DragDropListbox(tk.Listbox):
 class App(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
-
+        self.full_list = []
         self.title('Drag and Drop Files')
         self.geometry('800x600')
         self.configure(bg='white')
@@ -149,7 +149,7 @@ class App(TkinterDnD.Tk):
 
     # a function the checks if all the files in the listbox exist
     def check_files(self):
-        for file in self.listbox.get(0, tk.END):
+        for file in self.full_list:
             if not os.path.isfile(file):
                 # if file not exist pop a message box
                 messagebox.showerror("Error", "File " + file + " does not exist")
@@ -185,7 +185,7 @@ class App(TkinterDnD.Tk):
     def build_thread(self, export_file):
         self.lock_gui()
         # Pass the progress_callback function to the combine_audio_files function
-        merger.combine_audio_files(list(self.listbox.get(0, tk.END)), export_file,
+        merger.combine_audio_files(self.full_list, export_file,
                                    progress_callback=self.progress_callback)
 
         # Unlock the GUI
@@ -231,12 +231,11 @@ class App(TkinterDnD.Tk):
 
     def update_backup(self, path="backup.txt", full=True):
         with open(path, "w", encoding='utf-8') as file:
-            for item in self.listbox.get(0, tk.END):
+            for i in range(len(self.full_list)):
                 if full:
-                    file.write(item + "\n")
+                    file.write(self.full_list[i] + "\n")
                 else:
-                    file.write(os.path.basename(item) + "\n")
-
+                    file.write(list(self.listbox.get(0, tk.END))[i] + "\n")
 
     def clear_listbox(self):
         # promps the user if he wants to clear the listbox
@@ -244,12 +243,14 @@ class App(TkinterDnD.Tk):
             return
         self.listbox.delete(0, tk.END)
         self.update_backup()
+        self.full_list = []
 
     def remove_item(self):
         selection = self.listbox.curselection()
         if len(selection) == 0:
             return
         self.listbox.delete(selection[0])
+        self.full_list.pop(selection[0])
         self.update_backup()
 
     def load_backup(self):
@@ -261,8 +262,18 @@ class App(TkinterDnD.Tk):
     def add_file(self, file_path):
         file_path = win32api.GetLongPathName(file_path)
 
+        normalized_path = os.path.normpath(file_path)
+        path_parts = normalized_path.split(os.path.sep)
+
+        if len(path_parts) > 3:
+            # Return the last three parts joined as a path
+            short_path = os.path.join(*path_parts[-3:])
+        else:
+            # Return the original path if it has 3 or fewer parts
+            short_path = file_path
+        print(path_parts)
         # Check if file_path is already in the listbox
-        if file_path in self.listbox.get(0, tk.END):
+        if short_path in self.listbox.get(0, tk.END):
             return
 
         # Check if the file has an audio format
@@ -274,7 +285,8 @@ class App(TkinterDnD.Tk):
         if file_extension not in audio_extensions:
             return
 
-        self.listbox.insert(tk.END, file_path)
+        self.full_list.append(file_path)
+        self.listbox.insert(tk.END, short_path)
         self.update_backup()
 
     def setup_drag_and_drop(self):
@@ -283,6 +295,7 @@ class App(TkinterDnD.Tk):
 
     def load_files_from_txt(self, txt_file_path=None):
         self.listbox.delete(0, tk.END)
+        self.full_list = []
         if not txt_file_path:
             txt_file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
         if txt_file_path:
@@ -297,7 +310,7 @@ class App(TkinterDnD.Tk):
             self.destroy()
             exit()
 
-# Method to move a file up in the list
+    # Method to move a file up in the list
     def move_up(self):
         selected = self.listbox.curselection()
         if selected:
@@ -307,6 +320,10 @@ class App(TkinterDnD.Tk):
                     self.listbox.delete(index + 1)
                     self.listbox.select_clear(index)
                     self.listbox.select_set(index - 1)
+
+                    self.full_list.insert(index - 1, self.full_list[index])
+                    self.full_list.pop(index + 1)
+
             self.listbox.update_backup()
 
     # Method to move a file down in the list
@@ -320,7 +337,12 @@ class App(TkinterDnD.Tk):
                     self.listbox.delete(index)
                     self.listbox.select_clear(index + 2)
                     self.listbox.select_set(index + 1)
+
+                    self.full_list.insert(index + 2, self.full_list[index])
+                    self.full_list.pop(index)
             self.listbox.update_backup()
+
+
 if __name__ == '__main__':
     if getattr(sys, 'frozen', False):
         print("Running in a PyInstaller bundle")
