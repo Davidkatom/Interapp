@@ -248,7 +248,7 @@ class App(TkinterDnD.Tk):
         if os.path.exists("backup.txt"):
             with open("backup.txt", "r", encoding='utf-8') as file:
                 for line in file:
-                    self.add_file(line.strip())
+                    self.add_file(line.rstrip('\r\n'))
 
     def add_file(self, file_path):
         try:
