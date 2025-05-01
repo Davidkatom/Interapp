@@ -34,27 +34,6 @@ class DragDropListbox(tk.Listbox):
             self.delete(selected)
             self.update_backup()
 
-    # def start_drag(self, event):
-    #     self.drag_start_index = self.nearest(event.y)
-    #
-    # def drag(self, event):
-    #     current_index = self.nearest(event.y)
-    #
-    #     if current_index != self.drag_start_index:
-    #         self.swap(self.drag_start_index, current_index)
-    #         self.drag_start_index = current_index
-    #
-    # def drop(self, event):
-    #     self.drag_start_index = None
-    #
-    # def swap(self, a, b):
-    #     items = list(self.get(0, tk.END))
-    #     items[a], items[b] = items[b], items[a]
-    #
-    #     self.delete(0, tk.END)
-    #     self.insert(0, *items)
-    #     self.update_backup()
-
     def update_backup(self):
         with open("backup.txt", "w", encoding='utf-8') as file:
             for item in self.get(0, tk.END):
