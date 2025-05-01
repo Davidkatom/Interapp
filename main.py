@@ -1,15 +1,15 @@
 # TODO add distribution
 import os
 import tkinter as tk
-
-import os, pywintypes, win32api
 import winsound
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
 from tkinter import ttk
 import threading
 import merger
+import os
 import sys
+import win32api
 
 
 class DragDropListbox(tk.Listbox):
@@ -251,30 +251,12 @@ class App(TkinterDnD.Tk):
                     self.add_file(line.rstrip('\r\n'))
 
     def add_file(self, file_path):
-        # try:
-        #     print("Adding file: ", file_path)
-        #     file_path = win32api.GetLongPathName(file_path)
-        # except Exception as e:
-        #     print(f"Error getting long path name: {e}", "name: " + file_path)
-        #     return
-
-        # 1️⃣ absolute and backslashes only
-        file_path = os.path.abspath(file_path)  # adds drive letter if missing
-        file_path = os.path.normpath(file_path)  # / → \ on Windows
-
-        # 2️⃣ (optional) verify the file really exists before calling Win32
-        if not os.path.exists(file_path):
-            print("Skip – file not found:", file_path)
-            return
-
-        # 3️⃣ expand to long form – but fall back gracefully if it still fails
         try:
+            print("Adding file: ", file_path)
             file_path = win32api.GetLongPathName(file_path)
-        except pywintypes.error as exc:
-            # API can still fail if a parent folder is unreadable;
-            # don’t crash the GUI – just keep the path as-is.
-            print("GetLongPathName failed:", exc, "→ using raw path")
-            # file_path unchanged
+        except Exception as e:
+            print(f"Error getting long path name: {e}", "name: " + file_path)
+            return
 
         normalized_path = os.path.normpath(file_path)
         path_parts = normalized_path.split(os.path.sep)
@@ -300,7 +282,7 @@ class App(TkinterDnD.Tk):
 
         self.full_list.append(file_path)
         self.listbox.insert(tk.END, short_path)
-        self.update_backup()
+        # self.update_backup()
 
     def setup_drag_and_drop(self):
         self.listbox.drop_target_register(DND_FILES)
