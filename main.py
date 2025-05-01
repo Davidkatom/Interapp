@@ -248,11 +248,10 @@ class App(TkinterDnD.Tk):
         if os.path.exists("backup.txt"):
             with open("backup.txt", "r", encoding='utf-8') as file:
                 for line in file:
-                    self.add_file(line.rstrip('\r\n'))
+                    self.add_file(line.rstrip('\r\n'), loading=True)
 
-    def add_file(self, file_path):
+    def add_file(self, file_path, loading=False):
         try:
-            print("Adding file: ", file_path)
             file_path = win32api.GetLongPathName(file_path)
         except Exception as e:
             print(f"Error getting long path name: {e}", "name: " + file_path)
@@ -282,7 +281,8 @@ class App(TkinterDnD.Tk):
 
         self.full_list.append(file_path)
         self.listbox.insert(tk.END, short_path)
-        # self.update_backup()
+        if not loading:
+            self.update_backup()
 
     def setup_drag_and_drop(self):
         self.listbox.drop_target_register(DND_FILES)
