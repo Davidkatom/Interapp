@@ -252,6 +252,7 @@ class App(TkinterDnD.Tk):
 
     def add_file(self, file_path):
         try:
+            print("Adding file: ", file_path)
             file_path = win32api.GetLongPathName(file_path)
         except Exception as e:
             print(f"Error getting long path name: {e}", "name: " + file_path)
