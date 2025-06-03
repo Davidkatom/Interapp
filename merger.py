@@ -12,10 +12,14 @@ def combine_audio_files(audio_files, export_file="combined_audio.mp3",progress_c
     max_length = 0
 
     for audio_file in tqdm(audio_files[1:-1], desc="Calculating max length", unit="file"):
-        tag = TinyTag.get(audio_file)
-        current_duration = tag.duration * 1000  # Convert to milliseconds
-        if current_duration > max_length:
-            max_length = current_duration
+        try:
+            tag = TinyTag.get(audio_file)
+            current_duration = tag.duration * 1000  # Convert to milliseconds
+            if current_duration > max_length:
+                max_length = current_duration
+        except Exception as e:
+            # You can swap print for logging.warning if you already use logging
+            print(f"⚠️  Problem reading {audio_file}: {e}")
 
 
     # Create a silent audio segment with the maximum length
