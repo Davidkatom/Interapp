@@ -1,12 +1,19 @@
 from pydub import AudioSegment
 from tqdm import tqdm
 from tinytag import TinyTag
+import win32api
 
+
+def ffmpeg_path(path):
+    try:
+        return win32api.GetShortPathName(path)
+    except Exception:
+        return path
 
 def combine_audio_files(audio_files, export_file="combined_audio.mp3",progress_callback=None):
     # Load the first and last audio files
-    first_audio = AudioSegment.from_file(audio_files[0])
-    last_audio = AudioSegment.from_file(audio_files[-1])
+    first_audio = AudioSegment.from_file(ffmpeg_path(audio_files[0]))
+    last_audio = AudioSegment.from_file(ffmpeg_path(audio_files[-1]))
 
     # Calculate the maximum length of the middle audio files
     max_length = 0
@@ -27,7 +34,7 @@ def combine_audio_files(audio_files, export_file="combined_audio.mp3",progress_c
     index = 1
     # Overlay all middle audio files onto the silent audio segment
     for audio_file in tqdm(audio_files[1:-1], desc="Combining audio files", unit="file"):
-        current_audio = AudioSegment.from_file(audio_file)
+        current_audio = AudioSegment.from_file(ffmpeg_path(audio_file))
         middle_audio = middle_audio.overlay(current_audio)
 
         if progress_callback:
