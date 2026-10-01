@@ -251,11 +251,7 @@ class App(TkinterDnD.Tk):
                     self.add_file(line.rstrip('\r\n'), loading=True)
 
     def add_file(self, file_path, loading=False):
-        try:
-            file_path = os.path.abspath(file_path)
-        except Exception as e:
-            print(f"Error getting long path name: {e}", "name: " + file_path)
-            return
+        file_path = os.path.abspath(file_path)
 
         normalized_path = os.path.normpath(file_path)
         path_parts = normalized_path.split(os.path.sep)
